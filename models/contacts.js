@@ -26,15 +26,16 @@ const getContactById = async (contactId) => {
   return contact;
 }
 
-const removeContact = async (contactId) => {
+const removeContact = async (id) => {
   const contacts = await readContacts();
-    const newContacts = contacts.filter(contact=>contact.id!==(contactId));
-    const deletedCon = contacts.filter(contact=>contact.id===(contactId))
-    if(!deletedCon.length){
-      return null
-    }
-    await updateContacts(newContacts);
-    return deletedCon;
+const index = contacts.findIndex(contact => contact.id===id);
+if (index===-1) {
+  return null;
+}
+const removedContact = contacts[index]
+contacts.splice(index,1)
+await updateContacts(contacts);
+return removedContact;
   }
 
 const addContact = async (contact) => {const contacts = await readContacts();
@@ -46,11 +47,10 @@ const addContact = async (contact) => {const contacts = await readContacts();
 const updateContact = async (id, body) => {
   const contacts = await readContacts();
   const index = contacts.findIndex(contact => contact.id===id);
-  console.log(index)
   if(index===-1){
     return null;
   }
-  contacts[index]={id, ...body}
+  contacts[index]={...contacts[index], ...body}
   await updateContacts(contacts);
   return contacts[index];
 }

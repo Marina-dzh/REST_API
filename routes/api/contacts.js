@@ -12,7 +12,12 @@ const addSchema = Joi.object({
   phone: Joi.string().required()
 })
 
-
+const addSchemaForUpdate = Joi.object({
+  id:Joi.string(),
+  name: Joi.string(),
+  email: Joi.string().email(),
+  phone: Joi.string()
+})
 
 router.get('/', async (req, res, next) => {
 try{
@@ -74,7 +79,7 @@ router.delete('/:contactId', async (req, res, next) => {
 
 router.put('/:contactId', async (req, res, next) => {
   try {
-    const {error} = addSchema.validate(req.body)
+    const {error} = addSchemaForUpdate.validate(req.body)
     if(error){
       throw httpError(400, error.message)
     }
