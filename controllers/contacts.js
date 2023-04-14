@@ -33,7 +33,6 @@ const byId = async (req, res) => {
 const remove = async (req, res) => {
 
           const {contactId}= req.params;
-      
           const result = await Contact.findByIdAndDelete(contactId);
       
           if(!result){
@@ -58,8 +57,6 @@ const remove = async (req, res) => {
       }
 
       const updateStatusContact = async (req, res) => {
-
-          
         const {contactId}= req.params;
         
         const result = await Contact.findByIdAndUpdate(contactId, req.body, {new:true});
@@ -67,7 +64,6 @@ const remove = async (req, res) => {
           throw httpError(404, "Contact not found");
         }
         res.status(200).json(result);
-      
     }
 
 
