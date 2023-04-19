@@ -1,6 +1,7 @@
-const httpError = (status, message) => {
+const httpError = (status = 404, message) => {
     const err = new Error(message);
-    err.status = 404;
+    err.status = status;
+    console.log("http error")
     throw err;
 }
 module.exports = httpError;
