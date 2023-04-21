@@ -33,19 +33,13 @@ const login = async (req, res) =>{
 
 const {email, password} = req.body;
 const user = await User.findOne({email});
-console.log(
-    "36", user.email
-)
+
 if(!user){
     throw httpError(401, "Email or password is wrong");
 }
-console.log(
-    "39", user.password, password
-)
+
 const passwordCompare = await bcrypt.compare(password, user.password);
-console.log(
-    "43",passwordCompare
-)
+
 if(!passwordCompare){
     throw httpError(401, "Email or password is wrong");
 }
@@ -53,18 +47,43 @@ if(!passwordCompare){
 const payload = {
     id:user._id,
 }
-console.log(
-    "53", payload
-)
-const token = jwt.sign(payload, SECRET_KEY,{expiresIn:"6h"} )
+const subscription =user.subscription
+const token = jwt.sign(payload, SECRET_KEY,{expiresIn:"6h"} );
+await User.findByIdAndUpdate(user._id, {token});
 res.json({
-    token})
+    token, email, subscription})
+
+}
+
+
+
+const getCurrent = async(req, res) =>{
+const {email, subscription} = req.user;
+res.status(200).json({email, subscription})
+}
+
+
+
+const logout= async(req, res) =>{
+const {_id}=req.user;
+await User.findByIdAndUpdate(_id, {token:""})
+res.status(204).json({message:"Logout success"})
+}
+
+const updateSub= async(req, res) =>{
+   
+    const {_id}=req.user;
+await User.findByIdAndUpdate(_id, req.body,{new:true})
+res.status(200).json({message:`Subscription updated to "${req.body.subscription}`})
 
 }
 
 
 module.exports = {
     register:ctrlWrapper(register),
-    login:ctrlWrapper(login)
+    login:ctrlWrapper(login),
+    getCurrent:ctrlWrapper(getCurrent),
+    logout:ctrlWrapper(logout),
+    updateSub:ctrlWrapper(updateSub)
 }
 

@@ -46,7 +46,11 @@ const loginSchema = Joi.object({
    
 })
 
-  const schemas = {registerSchema,loginSchema};
+const updateSubSchema = Joi.object({
+  subscription: Joi.string().valid("starter", "pro", "business").required()
+})
+
+  const schemas = {registerSchema,loginSchema, updateSubSchema};
   const User = model('user', userSchema);
 
 module.exports = {User, schemas};
