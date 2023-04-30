@@ -1,13 +1,24 @@
 const {User} = require("../models/user");
 
+const path = require("path");
+
+const fs = require("fs/promises");
+
 const bcrypt = require("bcrypt");
 
 const jwt = require("jsonwebtoken");
+
+const gravatar = require("gravatar");
+
+const crypto = require("crypto");
+
+const jimp = require("jimp");
 
 const { ctrlWrapper, httpError}= require('../helpers');
 
 const{SECRET_KEY} = process.env;
 
+const avatarDir = path.join(__dirname, '../', 'public','avatars');
 
 const register = async (req, res) =>{
 const {email, password} = req.body;
@@ -18,7 +29,9 @@ if(user){throw httpError (409, " Email in use");}
 
 
 const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await User.create({...req.body, password: hashedPassword});
+
+const avatarURL= gravatar.url(email);
+    const newUser = await User.create({...req.body, password: hashedPassword, avatarURL});
 
     res.status(201).json({
         email: newUser.email,
@@ -78,12 +91,37 @@ res.status(200).json({message:`Subscription updated to "${req.body.subscription}
 
 }
 
+const updateAvatar = async(req, res) =>{
+    const {_id}=req.user;
+
+const {path:tempUpload, originalname} = req.file;
+
+
+const image = await jimp.read(tempUpload);
+
+  await image.resize(250, 250).writeAsync(tempUpload);
+
+const ext = path.extname(originalname);
+const baseName = path.basename(originalname, ext);
+const uniqSuf = crypto.randomUUID()
+const avatarName = `${baseName}_${uniqSuf}${ext}`
+
+const resultUpload = path.join(avatarDir, avatarName);
+await fs.rename(tempUpload, resultUpload);
+const avatarURL = path.join("avatars", avatarName);
+await User.findByIdAndUpdate(_id, {avatarURL});
+
+res.json({
+    avatarURL
+})
+}
 
 module.exports = {
     register:ctrlWrapper(register),
     login:ctrlWrapper(login),
     getCurrent:ctrlWrapper(getCurrent),
     logout:ctrlWrapper(logout),
-    updateSub:ctrlWrapper(updateSub)
+    updateSub:ctrlWrapper(updateSub),
+    updateAvatar:ctrlWrapper(updateAvatar)
 }
 
